@@ -18,11 +18,11 @@ function App() {
 		<Router>
 			<div className="flex flex-col relative h-screen bg-base-100 mainApp">
 				<Navbar />
-				<div className="flex flex-col mx-auto h-screen w-11/12 max-w-6xl justify-center items-center">
+				<div className="flex flex-col mx-auto h-screen w-11/12 max-w-screen-2xl justify-center items-center">
 					<Routes>
-						<Route exact path="/" element={<Login />} />
-						<Route exact path="/quizzes" element={<AllQuizes />} />
-						<Route exact path="/quiz/:id" element={<Quiz />} />
+						<Route path="/" element={<AllQuizes />} />
+						<Route exact path="/sign-in" element={<Login />} />
+						<Route exact path="/quiz/:quizId" element={<Quiz />} />
 						<Route exact path="/profile/:userId" element={<UserProfile />} />
 						<Route exact path="/create-account" element={<CreateAccount />} />
 						<Route
