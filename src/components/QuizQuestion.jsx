@@ -26,9 +26,9 @@ function QuizQuestion({ question, nextQuestion }) {
 	};
 
 	return (
-		<div className="mx-8">
-			<p className="text-4xl text-primary-content font-bold">{question.question}</p>
-			<form className="flex flex-col gap-4 my-10 " onSubmit={chooseAnswer}>
+		<>
+			<p className="text-2xl text-primary-content font-bold">{question.question}</p>
+			<form className="flex flex-col gap-2 my-6 " onSubmit={chooseAnswer}>
 				{options.map((option, i) => {
 					return (
 						<div key={i} className="flex flex-row px-4 items-center gap-6 rounded-lg hover:bg-base-100">
@@ -43,9 +43,11 @@ function QuizQuestion({ question, nextQuestion }) {
 						</div>
 					);
 				})}
-				<button className="btn btn-secondary self-center w-3/12 btn-outline btn-lg mt-8">Next Question</button>
+				<button className="btn btn-secondary self-center w-1/2 lg:w-3/12 btn-outline btn-lg mt-8">
+					Next Question
+				</button>
 			</form>
-		</div>
+		</>
 	);
 }
 

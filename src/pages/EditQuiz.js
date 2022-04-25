@@ -1,21 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { BsPlusCircle } from 'react-icons/bs';
 import { BiMinusCircle } from 'react-icons/bi';
 import { useFocus } from '../hooks/useFocus';
 import { useMountEffect } from '../hooks/inputMount';
 import { auth, db } from '../firebase.config';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { getDoc, doc, addDoc, collection, serverTimestamp, updateDoc } from 'firebase/firestore';
+import Spinner from '../components/Spinner';
 
-function CreateQuiz() {
+function EditQuiz() {
 	const navigate = useNavigate();
+	const params = useParams();
+	const [loading, setLoading] = useState(true);
+	const [quiz, setQuiz] = useState(false);
 	const [formData, setFormData] = useState({
 		quizName: '',
 		questions: [{ question: '', answer: '', options: [''] }],
 	});
+	const { quizName, questions } = formData;
 
-	const { questions } = formData;
+	// Redirect if quiz is not users
+	useEffect(() => {
+		if (quiz && quiz.userRef !== auth.currentUser.uid) {
+			toast.error(`You cannot edit this quiz`);
+			navigate('/');
+		}
+	}, []);
+
+	// Sets quiz to edit
+	useEffect(() => {
+		setLoading(true);
+		const fetchQuiz = async () => {
+			const docRef = doc(db, 'quizzes', params.quizId);
+			const docSnap = await getDoc(docRef);
+
+			if (docSnap.exists()) {
+				setQuiz(docSnap.data());
+				setFormData({ ...docSnap.data() });
+				setLoading(false);
+			} else {
+				navigate('/');
+				toast.error('Could not find quizzes to edit');
+			}
+		};
+
+		fetchQuiz();
+	}, [params.listingId, navigate]);
 
 	//---------------------------------------------------------------------------------------------------//
 	const onChange = (e, i, j) => {
@@ -102,6 +133,7 @@ function CreateQuiz() {
 
 	//---------------------------------------------------------------------------------------------------//
 	const setAnswer = (e, i) => {
+		console.log(e.target);
 		questions[i].answer = e.target.value;
 		setFormData(prevState => ({
 			...prevState,
@@ -155,13 +187,11 @@ function CreateQuiz() {
 		if (qName && qQuestions && qOptions && qAnswers) {
 			const formDataCopy = {
 				...formData,
-				userName: auth.currentUser.displayName,
-				userRef: auth.currentUser.uid,
-				timestamp: serverTimestamp(),
-				timesCompleted: 0,
 			};
-			const docRef = await addDoc(collection(db, 'quizzes'), formDataCopy);
-			toast.success('Quiz created!');
+			const docRef = doc(db, 'quizzes', params.quizId);
+			await updateDoc(docRef, formDataCopy);
+
+			toast.success('Quiz edited!');
 
 			navigate(`/quiz/${docRef.id}`);
 		}
@@ -171,113 +201,120 @@ function CreateQuiz() {
 	return (
 		<div className="w-full rounded-xl shadow-xl p-4 lg:p-10 bg-base-300">
 			<div className="justify-center items-center flex flex-col">
-				<header className="w-fit flex flex-col justify-center items-center my-3 lg:my-8">
-					<p className="font-bold text-primary-content text-xl lg:text-4xl tracking-widest">CREATE</p>
+				<header className="w-fit flex flex-col justify-center items-center mb-2 lg:my-10">
+					<p className="font-bold text-primary-content text-xl lg:text-4xl tracking-widest">EDIT</p>
 					<div className="h-1 mt-1 w-full bg-secondary"></div>
 				</header>
 			</div>
-			<div className="w-full flex flex-col gap-5">
-				<label htmlFor="" className="text-primary-content text-xl lg:text-2xl shrink-0">
-					Quiz Name
-				</label>
-				<input
-					type="text"
-					id="quizName"
-					placeholder="enter name"
-					onChange={onChange}
-					className="input input-md-- lg:input-lg w-full"
-				/>
 
-				{/* Questions -------------------------------------------------------------------------- */}
-				{formData.questions.map((question, i) => {
-					return (
-						<div key={i} className="w-full">
-							<div className="divider"></div>
-							<div className="flex flex-col lg:flex-row gap-4 lg:gap-10">
-								<div className="flex font-bold text-primary-content shrink-0 justify-center items-center h-8 w-8 lg:h-12 lg:w-12 mt-1 rounded-full bg-accent text-xl lg:text-2xl">
-									{i + 1}
-								</div>
-								<div className="w-full lg:w-4/12">
-									<textarea
-										type="text"
-										id="question"
-										defaultValue=""
-										placeholder="enter question"
-										onChange={e => onChange(e, i)}
-										onKeyDown={addQuestionKeyDown}
-										className="textarea w-full text-lg lg:text-xl"
-										min={3}
+			{loading ? (
+				<Spinner />
+			) : (
+				<div className="w-full flex flex-col gap-2 lg:gap-5">
+					<label htmlFor="" className="text-primary-content text-xl lg:text-2xl shrink-0">
+						Quiz Name
+					</label>
+					<input
+						type="text"
+						id="quizName"
+						placeholder="enter name"
+						defaultValue={quizName}
+						onChange={onChange}
+						className="input input-md lg:input-lg w-full"
+					/>
+
+					{/* Questions -------------------------------------------------------------------------- */}
+					{formData.questions.map((question, i) => {
+						return (
+							<div key={i} className="w-full">
+								<div className="divider"></div>
+								<div className="flex flex-col lg:flex-row gap-3 lg:gap-10">
+									<div className="flex font-bold text-primary-content shrink-0 justify-center items-center h-7 w-7 lg:h-10 lg:w-10 mt-1 rounded-full bg-accent text-lg lg:text-xl">
+										{i + 1}
+									</div>
+									<div className="w-full lg:w-4/12">
+										<textarea
+											type="text"
+											id="question"
+											defaultValue={question.question}
+											placeholder="enter question"
+											onChange={e => onChange(e, i)}
+											onKeyDown={addQuestionKeyDown}
+											className="textarea w-full text-xl"
+											min={3}
+										/>
+									</div>
+
+									{/* Options -------------------------------------------------------------------------- */}
+									<form className="w-full lg:w-6/12">
+										{question.options.map((option, j) => {
+											return (
+												<div key={j} className="flex flex-row gap-3 items-center">
+													<div className="flex justify-center items-center font-bold text-primary-content shrink-0 h-6 w-6 lg:h-10 lg:w-10 rounded-full bg-primary lg:text-xl text-md">
+														{j + 1}
+													</div>
+													<input
+														type="text"
+														id="option"
+														defaultValue={option}
+														placeholder="enter option"
+														onChange={e => onChange(e, i, j)}
+														className="input input-md lg:input-lg w-full mb-2"
+														min={1}
+													/>
+													<input
+														defaultChecked={option === question.answer}
+														type="radio"
+														name="radio-4"
+														defaultValue={option}
+														className="radio radio-accent"
+														onChange={e => setAnswer(e, i)}
+														title="Set answer"
+													/>
+													<BiMinusCircle
+														className="w-10 h-10 cursor-pointer fill-error hover:fill-error-content"
+														onClick={e => removeOption(e, i, j)}
+														title="Add a new option"
+													/>
+												</div>
+											);
+										})}
+									</form>
+									<button
+										className="btn btn-outline btn-secondary btn-large block lg:hidden"
+										onClick={e => addOption(e, i)}
+										title="Add option"
+									>
+										Add Option
+									</button>
+									<BsPlusCircle
+										className="w-7 h-7 hidden lg:block mt-5 cursor-pointer fill-secondary hover:fill-accent"
+										onClick={e => addOption(e, i)}
+										title="Add option"
 									/>
 								</div>
-
-								{/* Options -------------------------------------------------------------------------- */}
-								<form className="w-full lg:w-6/12">
-									{question.options.map((option, j) => {
-										return (
-											<div key={j} className="flex flex-row gap-3 items-center">
-												<div className="flex justify-center items-center font-bold text-primary-content shrink-0 h-8 w-8 lg:h-10 lg:w-10 rounded-full bg-primary text-xl">
-													{j + 1}
-												</div>
-												<input
-													type="text"
-													id="option"
-													defaultValue=""
-													placeholder="enter option"
-													onChange={e => onChange(e, i, j)}
-													className="input input-lg w-full mb-2"
-													min={1}
-												/>
-												<input
-													type="radio"
-													defaultValue={option}
-													name="radio-4"
-													className="radio radio-accent mr-4"
-													onChange={e => setAnswer(e, i)}
-													title="Set answer"
-												/>
-												<BiMinusCircle
-													className="w-10 h-10 cursor-pointer fill-error hover:fill-error-content"
-													onClick={e => removeOption(e, i, j)}
-													title="Add a new option"
-												/>
-											</div>
-										);
-									})}
-								</form>
-								<button
-									className="btn btn-outline btn-secondary btn-large block lg:hidden"
-									onClick={e => addOption(e, i)}
-									title="Add option"
-								>
-									Add Option
-								</button>
-								<BsPlusCircle
-									className="w-7 h-7 hidden lg:block mt-5 cursor-pointer fill-secondary hover:fill-accent"
-									onClick={e => addOption(e, i)}
-									title="Add option"
-								/>
 							</div>
-						</div>
-					);
-				})}
+						);
+					})}
 
-				<button
-					className="btn btn-secondary btn-outline btn-large w-full mt-8"
-					onClick={addQuestion}
-					title="Add a new question"
-				>
-					Add Question <BsPlusCircle className="w-5 h-5 ml-4" />{' '}
-				</button>
-				<button
-					className="btn btn-accent btn-outline btn-large w-full mt-2"
-					onClick={quizSubmit}
-					title="Submit Quiz"
-				>
-					Submit Quiz
-				</button>
-			</div>
+					<button
+						className="btn btn-secondary btn-outline btn-large w-full mt-8"
+						onClick={addQuestion}
+						title="Add a new question"
+					>
+						Add Question <BsPlusCircle className="w-5 h-5 ml-4" />{' '}
+					</button>
+					<button
+						className="btn btn-accent btn-outline btn-large w-full mt-2"
+						onClick={quizSubmit}
+						title="Submit Quiz"
+					>
+						Submit Quiz
+					</button>
+				</div>
+			)}
 		</div>
 	);
 }
 
-export default CreateQuiz;
+export default EditQuiz;

@@ -44,20 +44,20 @@ function Quiz() {
 
 	//---------------------------------------------------------------------------------------------------//
 	return (
-		<div className=" w-full shadow-xl p-10 rounded-xl bg-base-300 items-center justify-center flex flex-col">
+		<div className=" w-full h-fit shadow-xl p-4 md:p-6 rounded-xl bg-base-300 items-center justify-center flex flex-col">
 			{loading ? (
 				<Spinner />
 			) : (
 				<div className="w-full flex flex-col justify-center items-center">
-					<header className="w-fit flex flex-col justify-center items-center my-10">
-						<p className="font-bold text-primary-content text-4xl tracking-widest uppercase">
+					<header className="w-fit flex flex-col justify-center items-center mb-6 xl:my-8 lg:px-10">
+						<p className="font-bold text-primary-content text-xl lg:text-2xl tracking-widest uppercase">
 							{quiz.quizName}
 						</p>
 						<div className="h-1 mt-1 w-full bg-secondary"></div>
 					</header>
 
 					{/* Display Quiz question or results */}
-					<div className="flex flex-col w-full">
+					<div className="flex flex-col w-full lg:px-10">
 						{question === quiz.questions.length ? (
 							<QuizResults quiz={quiz} questions={quiz.questions} answers={answers} score={score} />
 						) : (

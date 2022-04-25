@@ -3,6 +3,7 @@ import Login from './pages/Login';
 import AllQuizes from './pages/AllQuizes';
 import MyProfile from './pages/MyProfile';
 import CreateQuiz from './pages/CreateQuiz';
+import EditQuiz from './pages/EditQuiz';
 import CreateAccount from './pages/CreateAccount';
 import Quiz from './pages/Quiz';
 import UserProfile from './pages/UserProfile';
@@ -18,7 +19,7 @@ function App() {
 		<Router>
 			<div className="flex flex-col relative h-screen bg-base-100 mainApp">
 				<Navbar />
-				<div className="flex flex-col mx-auto h-screen w-11/12 max-w-screen-2xl justify-center items-center">
+				<div className="flex flex-col mx-auto h-screen w-11/12 max-w-screen-2xl justify-between items-center">
 					<Routes>
 						<Route path="/" element={<AllQuizes />} />
 						<Route exact path="/sign-in" element={<Login />} />
@@ -43,10 +44,19 @@ function App() {
 								</PrivateRoutes>
 							}
 						/>
+						<Route
+							exact
+							path="/edit-quiz/:quizId"
+							element={
+								<PrivateRoutes>
+									<EditQuiz />
+								</PrivateRoutes>
+							}
+						/>
 					</Routes>
+					<ToastContainer />
+					<Footer />
 				</div>
-				<ToastContainer />
-				<Footer />
 			</div>
 		</Router>
 	);

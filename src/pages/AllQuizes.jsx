@@ -45,40 +45,40 @@ function AllQuizes() {
 
 	//---------------------------------------------------------------------------------------------------//
 	return (
-		<div className=" w-full shadow-xl p-10 rounded-xl justify-center bg-base-300 items-center flex flex-col">
-			<header className="w-fit flex flex-col justify-center items-center my-10">
-				<p className="font-bold text-primary-content text-4xl tracking-widest">QUIZZES</p>
+		<div className=" w-full shadow-xl p-2 lg:p-6 rounded-xl mt-4 justify-center bg-base-300 items-center flex flex-col">
+			<header className="w-fit flex flex-col justify-center items-center my-4 lg:my-10">
+				<p className="font-bold text-primary-content text-xl md:text-4xl tracking-widest">QUIZZES</p>
 				<div className="h-1 mt-1 w-full bg-secondary"></div>
 			</header>
 			{loading ? (
 				<Spinner />
 			) : (
-				<div className="container w-3/4 mb-10 flex flex-col gap-5">
+				<div className="container w-full lg:w-11/12 mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
 					{quizzes.map((quiz, i) => {
 						return (
 							<div
 								key={i}
-								className="flex flex-col px-8 py-5 bg-base-100 rounded-lg cursor-pointer hover:bg-primary"
+								className="flex flex-col px-4 lg:px-6 py-4 lg:py-5 bg-base-100 rounded-lg cursor-pointer hover:bg-primary"
 								onClick={() => navigate(`/quiz/${quiz.id}`)}
 							>
-								<div className="flex mt-10 flex-row w-full ">
-									<div className="flex font-bold text-primary-content shrink-0 justify-center items-center h-14 w-14 rounded-full mr-10 bg-accent text-4xl">
+								<div className="flex flex-row w-full">
+									<div className="flex font-bold text-primary-content shrink-0 justify-center items-center h-7 w-7 lg:h-10 lg:w-10 rounded-full mr-4 lg:mr-10 bg-accent text-lg lg:text-xl">
 										{i + 1}
 									</div>
-									<p className="flex items-center justify-center text-2xl text-primary-content">
+									<p className="flex items-center justify-center text-lg md:text-2xl text-primary-content">
 										{quiz.data.quizName}
 									</p>
 								</div>
-								<div className="flex mt-16 flex-row w-full h-full">
+								<div className="flex mt-6 md:mt-8 flex-col gap-3 md:gap-0 xl:flex-row w-full h-full">
 									<p className="flex flex-row w-full">
-										<FiUser className="justify-center h-6 w-6  items-center mr-3 fill-secondary" />{' '}
+										<FiUser className="justify-center h-6 w-6 items-center mr-3 fill-secondary" />{' '}
 										{quiz.data.timesCompleted * 10621} users
 									</p>
-									<p className="flex flex-row w-full">
+									<p className="flex flex-row w-full mt-2 xl:mt-0">
 										<MdTagFaces className="justify-center h-6 w-6  items-center mr-3 fill-accent" />{' '}
 										89% average score
 									</p>
-									<p className="w-full text-right">Created by {quiz.data.userName}</p>
+									<p className="w-full text-left xl:text-right">Created by {quiz.data.userName}</p>
 								</div>
 							</div>
 						);
