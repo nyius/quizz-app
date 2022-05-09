@@ -1,23 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { BsPlusCircle } from 'react-icons/bs';
 import { BiMinusCircle } from 'react-icons/bi';
-import { useFocus } from '../hooks/useFocus';
-import { useMountEffect } from '../hooks/inputMount';
 import { auth, db } from '../firebase.config';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
 function CreateQuiz() {
-	const navigate = useNavigate();
+	// State for all of the entered quiz data
 	const [formData, setFormData] = useState({
 		quizName: '',
 		questions: [{ question: '', answer: '', options: [''] }],
 	});
 
 	const { questions } = formData;
+	const navigate = useNavigate();
 
-	//---------------------------------------------------------------------------------------------------//
+	// ---------------------------------------------------------------------------------------//
+	/**
+	 * Handles whenever a user starts typing in an input field
+	 * Stores entered quiz information into formData.
+	 * Expects an event (e), a question index num (i), and option index num (j).
+	 * @param {*} e
+	 * @param {number} i
+	 * @param {number} j
+	 */
 	const onChange = (e, i, j) => {
 		if (e.target.id === 'quizName') {
 			setFormData(prevState => ({
@@ -41,7 +48,13 @@ function CreateQuiz() {
 		}
 	};
 
-	//---------------------------------------------------------------------------------------------------//
+	// ---------------------------------------------------------------------------------------------------//
+	/**
+	 * Call this function when a user presses "add a new question" button.
+	 * Handles checking if their question is valid, and if it is we add it to our formState.
+	 * Expects an event.
+	 * @param {*} e
+	 */
 	const addQuestion = e => {
 		e.preventDefault();
 		// Check if the user has enterd a question name and atleast 1 option before making a new question
@@ -68,7 +81,13 @@ function CreateQuiz() {
 		}
 	};
 
-	//---------------------------------------------------------------------------------------------------//
+	// ------------------------------------------------------------------------------------------//
+	/**
+	 * Handles user adding an option to a question.
+	 * Expects an event, and a index number for a question to push the option to.
+	 * @param {*} e
+	 * @param {number} i
+	 */
 	const addOption = (e, i) => {
 		// Check if the user entered anything in the last field before making a new one
 		if (questions[i].options[questions[i].options.length - 1] !== '') {
@@ -80,8 +99,16 @@ function CreateQuiz() {
 		}
 	};
 
-	//---------------------------------------------------------------------------------------------------//
+	// ---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles the user removing an option from a question.
+	 * Expects an event (e), a question index num (i), and a option index num (j).
+	 * @param {*} e
+	 * @param {number} i
+	 * @param {number} j
+	 */
 	const removeOption = (e, i, j) => {
+		// First checks if this is the only option in the list or not (don't let the user remove the last option)
 		if (questions[i].options.length > 1) {
 			questions[i].options.splice(j, 1);
 			setFormData(prevState => ({
@@ -93,14 +120,25 @@ function CreateQuiz() {
 		}
 	};
 
-	//---------------------------------------------------------------------------------------------------//
+	// ---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles user pressing the enter key when inside of an option field (to add a new option)
+	 * Expects an event.
+	 * @param {*} e
+	 */
 	const addQuestionKeyDown = e => {
 		if (e.key === 'Enter') {
 			addQuestion(e);
 		}
 	};
 
-	//---------------------------------------------------------------------------------------------------//
+	//  ---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles the user choosing an option as the correct answer
+	 * expects an event, and a question index number.
+	 * @param {*} e
+	 * @param {number} i
+	 */
 	const setAnswer = (e, i) => {
 		questions[i].answer = e.target.value;
 		setFormData(prevState => ({
@@ -110,14 +148,25 @@ function CreateQuiz() {
 	};
 
 	//---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles the user submitting their quiz.
+	 * Expects an event.
+	 * Checks over all input fields for valid entries, and displays error message and stops submission if there are invalid entries.
+	 * @param {*} e
+	 * @returns
+	 */
 	const quizSubmit = async e => {
 		e.preventDefault();
+
+		// Variables to check if the user has met minimum proper requirements for submitting a new quiz.
+		// All options have to pass before the quiz can be submitted
 		let qName = false;
 		let qQuestions = true;
 		let qAnswers = true;
 		let qOptions = true;
 
 		// Check that there are no blank form fields
+		// First, check for any blank questions
 		questions.forEach((q, i) => {
 			if (q.question === '') {
 				toast.error('You forgot one of your questions!');
@@ -126,6 +175,7 @@ function CreateQuiz() {
 				qQuestions === false ? (qQuestions = false) : (qQuestions = true);
 			}
 
+			// Loop over each option and make sure there are no blanc options.
 			q.options.forEach((opt, j) => {
 				if (opt === '') {
 					toast.error('One of your options is blank!');
@@ -135,6 +185,7 @@ function CreateQuiz() {
 				}
 			});
 
+			// Check the answer and make sure there is one set.
 			if (q.answer === '') {
 				toast.error('You need to have an answer for all questions!');
 				qAnswers === false ? (qAnswers = false) : (qAnswers = false);
@@ -143,6 +194,7 @@ function CreateQuiz() {
 			}
 		});
 
+		// Check if the user set a quiz name.
 		if (formData.quizName === '') {
 			toast.error('You need to give your quiz a name!');
 			qName = false;
@@ -160,6 +212,7 @@ function CreateQuiz() {
 				timestamp: serverTimestamp(),
 				timesCompleted: 0,
 			};
+			// Add the quiz to our database.
 			const docRef = await addDoc(collection(db, 'quizzes'), formDataCopy);
 			toast.success('Quiz created!');
 

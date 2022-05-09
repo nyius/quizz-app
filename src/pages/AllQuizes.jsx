@@ -1,18 +1,20 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Spinner from '../components/Spinner';
 import { toast } from 'react-toastify';
-import { collection, getDocs, query, where, orderBy, limit, startAfter } from 'firebase/firestore';
-import { auth, db } from '../firebase.config';
+import { collection, getDocs, query } from 'firebase/firestore';
+import { db } from '../firebase.config';
 import { FiUser } from 'react-icons/fi';
 import { MdTagFaces } from 'react-icons/md';
 
 function AllQuizes() {
+	// States for holding all loaded quizzes and the loading state
 	const [quizzes, setQuizzes] = useState(null);
 	const [loading, setLoading] = useState(true);
 
 	const navigate = useNavigate();
 
+	// UseEffect to handle loading quizzs
 	useEffect(() => {
 		const fetchQuizzes = async () => {
 			try {
@@ -25,6 +27,7 @@ function AllQuizes() {
 
 				const quizzesArr = [];
 
+				// loop over our fetched quizzes and push them to our quizzesArr
 				querySnap.forEach(quiz => {
 					return quizzesArr.push({
 						id: quiz.id,
@@ -32,6 +35,7 @@ function AllQuizes() {
 					});
 				});
 
+				// Set our quizzes
 				setQuizzes(quizzesArr);
 				setLoading(false);
 			} catch (error) {
@@ -46,6 +50,7 @@ function AllQuizes() {
 	//---------------------------------------------------------------------------------------------------//
 	return (
 		<div className=" w-full shadow-xl p-2 lg:p-6 rounded-xl mt-4 justify-center bg-base-300 items-center flex flex-col">
+			{/* Header */}
 			<header className="w-fit flex flex-col justify-center items-center my-4 lg:my-10">
 				<p className="font-bold text-primary-content text-xl md:text-4xl tracking-widest">QUIZZES</p>
 				<div className="h-1 mt-1 w-full bg-secondary"></div>
@@ -54,6 +59,7 @@ function AllQuizes() {
 				<Spinner />
 			) : (
 				<div className="container w-full lg:w-11/12 mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+					{/* Loop over our quizzes and create a card for each quiz */}
 					{quizzes.map((quiz, i) => {
 						return (
 							<div

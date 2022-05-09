@@ -1,12 +1,22 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { auth } from '../firebase.config';
 import { onAuthStateChanged } from 'firebase/auth';
 
+//---------------------------------------------------------------------------------------------------//
+/**
+ * Handles the current logged in user and listens for log in/out events
+ * @returns
+ */
 export const useAuthStatus = () => {
+	// Logged in state
 	const [loggedIn, setLoggedIn] = useState(false);
+	// Checking logged in status state
 	const [checkingStatus, setCheckingStatus] = useState(true);
-	const isMounted = useRef(true); // this useRef is to handle memory leak errors.
 
+	// this useRef is to handle memory leak errors.
+	const isMounted = useRef(true);
+
+	// UseEffect to check when a user logs in/out
 	useEffect(() => {
 		if (isMounted) {
 			onAuthStateChanged(auth, user => {
@@ -23,5 +33,6 @@ export const useAuthStatus = () => {
 		};
 	}, [isMounted]);
 
+	// returns the current loggedIn status, and if we're currently checking the logged in status
 	return { loggedIn, checkingStatus };
 };

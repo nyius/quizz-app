@@ -3,24 +3,27 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { BsPlusCircle } from 'react-icons/bs';
 import { BiMinusCircle } from 'react-icons/bi';
-import { useFocus } from '../hooks/useFocus';
-import { useMountEffect } from '../hooks/inputMount';
 import { auth, db } from '../firebase.config';
-import { getDoc, doc, addDoc, collection, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { getDoc, doc, updateDoc } from 'firebase/firestore';
 import Spinner from '../components/Spinner';
 
 function EditQuiz() {
-	const navigate = useNavigate();
-	const params = useParams();
+	// Loading State
 	const [loading, setLoading] = useState(true);
+	// Quiz state (to store the loaded quiz to edit)
 	const [quiz, setQuiz] = useState(false);
+	// Form State to handle any changes the user makes to the quiz
 	const [formData, setFormData] = useState({
 		quizName: '',
 		questions: [{ question: '', answer: '', options: [''] }],
 	});
+
 	const { quizName, questions } = formData;
 
-	// Redirect if quiz is not users
+	const navigate = useNavigate();
+	const params = useParams();
+
+	// useEffect to Redirect if quiz does not belong to current logged in user
 	useEffect(() => {
 		if (quiz && quiz.userRef !== auth.currentUser.uid) {
 			toast.error(`You cannot edit this quiz`);
@@ -28,20 +31,21 @@ function EditQuiz() {
 		}
 	}, []);
 
-	// Sets quiz to edit
+	// useEffect that fetches quiz and sets quiz to edit
 	useEffect(() => {
 		setLoading(true);
 		const fetchQuiz = async () => {
 			const docRef = doc(db, 'quizzes', params.quizId);
 			const docSnap = await getDoc(docRef);
 
+			// if we find our quiz, store it in our state
 			if (docSnap.exists()) {
 				setQuiz(docSnap.data());
 				setFormData({ ...docSnap.data() });
 				setLoading(false);
 			} else {
 				navigate('/');
-				toast.error('Could not find quizzes to edit');
+				toast.error('Could not find quiz to edit');
 			}
 		};
 
@@ -49,6 +53,13 @@ function EditQuiz() {
 	}, [params.listingId, navigate]);
 
 	//---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles the user changing an input field for either the quiz name, a question, or an option.
+	 * Expects an event (e), a question index num (i), and a option index num(j)
+	 * @param {*} e
+	 * @param {number} i
+	 * @param {number} j
+	 */
 	const onChange = (e, i, j) => {
 		if (e.target.id === 'quizName') {
 			setFormData(prevState => ({
@@ -72,7 +83,13 @@ function EditQuiz() {
 		}
 	};
 
-	//---------------------------------------------------------------------------------------------------//
+	// ---------------------------------------------------------------------------------------------------//
+	/**
+	 * Call this function when a user presses "add a new question" button.
+	 * Handles checking if their question is valid, and if it is we add it to our formState.
+	 * Expects an event.
+	 * @param {*} e
+	 */
 	const addQuestion = e => {
 		e.preventDefault();
 		// Check if the user has enterd a question name and atleast 1 option before making a new question
@@ -100,6 +117,12 @@ function EditQuiz() {
 	};
 
 	//---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles user adding an option to a question.
+	 * Expects an event, and a index number for a question to push the option to.
+	 * @param {*} e
+	 * @param {number} i
+	 */
 	const addOption = (e, i) => {
 		// Check if the user entered anything in the last field before making a new one
 		if (questions[i].options[questions[i].options.length - 1] !== '') {
@@ -112,6 +135,13 @@ function EditQuiz() {
 	};
 
 	//---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles the user removing an option from a question.
+	 * Expects an event (e), a question index num (i), and a option index num (j).
+	 * @param {*} e
+	 * @param {number} i
+	 * @param {number} j
+	 */
 	const removeOption = (e, i, j) => {
 		if (questions[i].options.length > 1) {
 			questions[i].options.splice(j, 1);
@@ -125,6 +155,11 @@ function EditQuiz() {
 	};
 
 	//---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles user pressing the enter key when inside of an option field (to add a new option)
+	 * Expects an event.
+	 * @param {*} e
+	 */
 	const addQuestionKeyDown = e => {
 		if (e.key === 'Enter') {
 			addQuestion(e);
@@ -132,6 +167,12 @@ function EditQuiz() {
 	};
 
 	//---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles the user choosing an option as the correct answer
+	 * expects an event, and a question index number.
+	 * @param {*} e
+	 * @param {number} i
+	 */
 	const setAnswer = (e, i) => {
 		console.log(e.target);
 		questions[i].answer = e.target.value;
@@ -142,6 +183,13 @@ function EditQuiz() {
 	};
 
 	//---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles the user submitting their quiz. Because this is just editing a quiz, we use firebase' updateDoc.
+	 * Expects an event.
+	 * Checks over all input fields for valid entries, and displays error message and stops submission if there are invalid entries.
+	 * @param {*} e
+	 * @returns
+	 */
 	const quizSubmit = async e => {
 		e.preventDefault();
 		let qName = false;

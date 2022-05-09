@@ -6,15 +6,23 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { setDoc, serverTimestamp, doc } from 'firebase/firestore';
 
 function CreateAccount() {
+	// Gather form data when user is entering information
 	const [formData, setFormData] = useState({
 		email: '',
 		password: '',
 		name: '',
 	});
 
+	// split the vars to be used when submitting
 	const { name, email, password } = formData;
 	const navigate = useNavigate();
 
+	// ---------------------------------------------------------------------------------------------------//
+	/**
+	 * Expects an event to be passed in.
+	 * Sets the state based on what input field the user typed in.
+	 * @param {*} e
+	 */
 	const onChange = e => {
 		setFormData(prevState => ({
 			...prevState,
@@ -23,6 +31,12 @@ function CreateAccount() {
 	};
 
 	//Submit new account ---------------------------------------------------------------------------------------------------//
+	/**
+	 * Expects an event to be passed in.
+	 * Handles the submission of the user account creation.
+	 * @param {*} e
+	 * @returns
+	 */
 	const onSubmit = async e => {
 		e.preventDefault();
 
@@ -42,6 +56,7 @@ function CreateAccount() {
 				const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 				const user = userCredential.user;
 
+				// Update the user displayName
 				updateProfile(auth.currentUser, {
 					displayName: name,
 				});

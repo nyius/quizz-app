@@ -1,5 +1,6 @@
 import React from 'react';
 
+// A simple loading spinner.Takes in an optional message
 function Spinner({ msg }) {
 	return (
 		<div className="w-100 mt-20 h-full w-full flex items-center justify-center">

@@ -1,15 +1,33 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 
+// A quiz question. Takes in the current question, as well as the function to handle submitting an answer and going to the next question
 function QuizQuestion({ question, nextQuestion }) {
+	// State to store an option
 	const [option, setOption] = useState(0);
+
+	// Get all of the options for the current question
 	const { options } = question;
 
+	//---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles the user selecting an answer
+	 * expects an event (e)
+	 * @param {*} e
+	 */
 	const selectOption = e => {
 		setOption(e.target.value);
 	};
 
-	const chooseAnswer = e => {
+	//---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles the user submitting an answer and going to the next question.
+	 * Checks for valid selected answer.
+	 * Expectes an event(e)
+	 * @param {*} e
+	 * @returns
+	 */
+	const submitAnswer = e => {
 		e.preventDefault();
 
 		if (!option) {
@@ -25,10 +43,12 @@ function QuizQuestion({ question, nextQuestion }) {
 		}
 	};
 
+	//---------------------------------------------------------------------------------------------------//
 	return (
 		<>
 			<p className="text-2xl text-primary-content font-bold">{question.question}</p>
-			<form className="flex flex-col gap-2 my-6 " onSubmit={chooseAnswer}>
+			<form className="flex flex-col gap-2 my-6 " onSubmit={submitAnswer}>
+				{/* Loop over each option and add it to the form */}
 				{options.map((option, i) => {
 					return (
 						<div key={i} className="flex flex-row px-4 items-center gap-6 rounded-lg hover:bg-base-100">

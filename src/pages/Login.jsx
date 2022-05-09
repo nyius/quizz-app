@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { auth, db, googleProvider } from '../firebase.config';
-import { signInWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { serverTimestamp, setDoc, doc, getDoc } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 
 function Login() {
+	// state to store our formData
 	const [formData, setFormData] = useState({
 		email: '',
 		password: '',
@@ -14,6 +15,12 @@ function Login() {
 	const { email, password } = formData;
 	const navigate = useNavigate();
 
+	//---------------------------------------------------------------------------------------------------//
+	/**
+	 * Expects an event to be passed in.
+	 * Sets the state based on what input field the user typed in.
+	 * @param {*} e
+	 */
 	const onChange = e => {
 		setFormData(prevState => ({
 			...prevState,
@@ -21,11 +28,16 @@ function Login() {
 		}));
 	};
 
-	//Email Login form submit---------------------------------------------------------------------------------------------------//
+	// Email Login form submit---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles form submission. Checks that input fields are valid
+	 * Expects an event (e)
+	 * @param {*} e
+	 */
 	const onSubmit = async e => {
 		e.preventDefault();
 
-		// run checks
+		// run very simple checks on email and password
 		if (!email) {
 			toast.error('You must enter an email');
 		} else if (!password) {
@@ -36,6 +48,7 @@ function Login() {
 			const userCredential = await signInWithEmailAndPassword(auth, email, password);
 			const user = userCredential.user;
 
+			// if user exists, send them to the dashboard.
 			if (user) {
 				toast.success('Logged in!');
 				navigate('/');
@@ -48,17 +61,22 @@ function Login() {
 		}
 	};
 
-	// Google login ---------------------------------------------------------------------------------------------------//
+	//  ---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles logging in with google account.
+	 */
 	const googleLogin = async () => {
 		try {
 			// Login with google account
 			const userCredential = await signInWithPopup(auth, googleProvider);
 
+			// Get user information.
 			const uid = userCredential.user.uid;
 			const name = userCredential.user.displayName;
 			const email = userCredential.user.email;
 			const timestamp = serverTimestamp();
 
+			// Check our users DB for this google user
 			const userRef = doc(db, 'users', uid);
 			const userSnap = await getDoc(userRef);
 

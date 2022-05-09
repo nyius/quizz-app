@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signOut } from 'firebase/auth';
 import { toast } from 'react-toastify';
 import { auth } from '../firebase.config';
 import { RiGhostSmileLine } from 'react-icons/ri';
@@ -8,7 +7,10 @@ import { RiGhostSmileLine } from 'react-icons/ri';
 function Navbar() {
 	const navigate = useNavigate();
 
-	//Sign out ---------------------------------------------------------------------------------------------------//
+	// ---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles the user clicking the logout button. Simply logs them out and navigates them to the sign in page
+	 */
 	const startSignOut = () => {
 		auth.signOut();
 		toast.success('Signed out');

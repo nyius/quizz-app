@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { auth, db } from '../firebase.config';
+import { db } from '../firebase.config';
 import { getDoc, doc } from 'firebase/firestore';
 import Spinner from '../components/Spinner';
 import QuizQuestion from '../components/QuizQuestion';
 import QuizResults from '../components/QuizResults';
-import { toast } from 'react-toastify';
 
 function Quiz() {
+	// State to store the current quiz
 	const [quiz, setQuiz] = useState(null);
+	// state to load the current question
 	const [question, setQuestion] = useState(0);
+	// state to store the users answers
 	const [answers, setAnswers] = useState([]);
+	// loading state
 	const [loading, setLoading] = useState(true);
+	// state to store the users score
 	const [score, setScore] = useState(0);
+
 	const params = useParams();
 
+	// useEffect to fetch the quiz.
 	useEffect(() => {
 		// fetch the quiz
 		const fetchQuiz = async () => {
@@ -29,7 +35,13 @@ function Quiz() {
 		fetchQuiz();
 	}, []);
 
-	// submit a question ---------------------------------------------------------------------------------------------------//
+	// ---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles the user submitting their answer and going to the next question.
+	 * Expects the correct answer for the question (correct), and the users submitted option (option)
+	 * @param {*} correct
+	 * @param {*} option
+	 */
 	const nextQuestion = (correct, option) => {
 		setAnswers(prevState => {
 			prevState.push([correct, option]);

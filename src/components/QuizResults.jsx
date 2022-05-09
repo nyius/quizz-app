@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { docRef, doc, collection, updateDoc } from 'firebase/firestore';
-import { toast } from 'react-toastify';
-import { auth, db } from '../firebase.config';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase.config';
 
+// Display quiz results. Takes in the current quiz, questions, users answers, and their score
 function QuizResults({ quiz, questions, answers, score }) {
 	const params = useParams();
 	const navigate = useNavigate();
 
-	// Add a count to how many times a quiz has been completed
+	// useEffect to Add a count to how many times a quiz has been completed
 	useEffect(() => {
 		const updateQuiz = async () => {
 			const docRef = doc(db, 'quizzes', params.quizId);
@@ -36,6 +36,7 @@ function QuizResults({ quiz, questions, answers, score }) {
 			<p className="text-xl lg:text-2xl text-primary-content font-bold">Answers</p>
 			<div className="divider"></div>
 			<div className="mt-2 lg:mt-10">
+				{/* Loop over each answer, and display it to the user if they got it right or wrong */}
 				{answers.map((answer, i) => {
 					return (
 						<div key={i} className="flex flex-col mt-2 lg:mt-10">

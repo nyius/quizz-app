@@ -2,24 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Spinner from '../components/Spinner';
 import { auth, db } from '../firebase.config';
-import { updateDoc, doc, collection, getDocs, query, where, orderBy, deleteDoc } from 'firebase/firestore';
+import { doc, collection, getDocs, query, where, deleteDoc } from 'firebase/firestore';
 import { FiUser } from 'react-icons/fi';
 import { MdTagFaces } from 'react-icons/md';
 import { toast } from 'react-toastify';
 
 function MyProfile() {
+	// Loading state
 	const [loading, setLoading] = useState(true);
+	// State to hold all of our personal quizzes
 	const [quizzes, setQuizzes] = useState(null);
+
 	const navigate = useNavigate();
 
+	// useEffect to fetch all of this users quizzes ---------------------------------------------------------------------------------------------------//
 	useEffect(() => {
 		const fetchQuizzes = async () => {
 			const quizzesRef = collection(db, 'quizzes');
+			// Set up our query to only get quizzes that match our loggeg in userRef
 			const q = query(quizzesRef, where('userRef', '==', auth.currentUser.uid));
 
 			const querySnap = await getDocs(q);
 
 			let quizzes = [];
+
+			// Loop over all of our quizzes and add them to our array, that will be stored in state
 			querySnap.forEach(quiz => {
 				return quizzes.push({
 					id: quiz.id,
@@ -33,6 +40,11 @@ function MyProfile() {
 	}, []);
 
 	//---------------------------------------------------------------------------------------------------//
+	/**
+	 * Handles the deleting of a specific quiz that belongs to this logged in user.
+	 * Expects an ID of the quiz to be deleted.
+	 * @param {*} quizId
+	 */
 	const deleteQuiz = async quizId => {
 		await deleteDoc(doc(db, 'quizzes', quizId));
 		const updatedQuizzes = quizzes.filter(quiz => quiz.id !== quizId);
@@ -60,6 +72,7 @@ function MyProfile() {
 				<div className="w-full flex flex-col justify-center items-center">
 					<p className="text-xl lg:text-2xl text-primary-content font-bold mb-5">Your quizzes</p>
 					<div className="container w-full lg:w-11/12 mb-10 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+						{/* Loop over all of the users quizzes and displays them */}
 						{quizzes.map((quiz, i) => {
 							return (
 								<div
